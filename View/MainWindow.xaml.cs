@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using LibraryMVVM_Application.Model;
+using LibraryMVVM_Application.ViewModel;
 
 namespace LibraryMVVM_Application
 {
@@ -20,6 +22,7 @@ namespace LibraryMVVM_Application
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainVM();
         }
     }
 }
