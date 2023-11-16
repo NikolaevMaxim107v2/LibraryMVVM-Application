@@ -20,8 +20,6 @@ namespace LibraryMVVM_Application
         public MainWindow()
         {
             InitializeComponent();
-
-
         }
     }
 }
