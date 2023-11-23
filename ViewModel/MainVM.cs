@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using LibraryMVVM_Application.ViewModel;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace LibraryMVVM_Application.ViewModel
 {
@@ -14,9 +15,12 @@ namespace LibraryMVVM_Application.ViewModel
     {
         private User selectedUser;
         private Book selectedBook;
+        private Book selectedUserBook;
 
         public ObservableCollection<User> AllUsers { get; set; }
         public ObservableCollection<Book> AllBooks { get; set; }
+
+        //public bool flag = false;
 
         public User SelectedUser
         {
@@ -24,7 +28,7 @@ namespace LibraryMVVM_Application.ViewModel
             set
             {
                 selectedUser = value;
-                OnPropertyChanged("SelectedUser");
+                OnPropertyChanged(nameof(SelectedUser));
             }
         }
 
@@ -34,7 +38,89 @@ namespace LibraryMVVM_Application.ViewModel
             set
             {
                 selectedBook = value;
-                OnPropertyChanged("SelectedBook");
+                OnPropertyChanged(nameof(SelectedBook));
+            }
+        }
+        public Book SelectedUserBook
+        {
+            get { return selectedUserBook; }
+            set
+            {
+                selectedUserBook = value;
+                OnPropertyChanged(nameof(SelectedUser));
+            }
+        }
+
+        private RelayCommand takeBook;
+        public RelayCommand TakeBook
+        {
+            get
+            {
+                return takeBook ?? (takeBook = new RelayCommand(obj =>
+                {
+                    if (selectedUser == null)
+                        ErrorBox.UserSelectError();
+                    if (selectedUserBook != null)
+                    {
+                        //if (flag == false)
+                        //{
+                        //    for (int i = 0; i < AllBooks.Count; i++)
+                        //    {
+                        //        if (SelectedBook.Arc == AllBooks[i].Arc) { AllBooks[i].Count += 1; }
+                        //    }
+                        //    SelectedUser.BookList.Remove(SelectedBook);
+                        //}
+                        //else
+                        //{
+                        for (int i = 0; i < AllBooks.Count; i++)
+                        {
+                            if (selectedUserBook.Arc == AllBooks[i].Arc) { AllBooks[i].Count += 1; }
+                        }
+                        for (int i = 0; i < selectedUser.BookList.Count; i++)
+                        {
+                            if (selectedUserBook.Arc == selectedUser.BookList[i].Arc)
+                            {
+                                selectedUser.BookList.Remove(selectedUser.BookList[i]);
+                                break;
+                            }
+                        }
+                        //}
+                    }
+                    else
+                    {
+                        ErrorBox.UserBookSelectError();
+                    }
+                }));
+            } 
+        }
+
+        private RelayCommand addBook;
+        public RelayCommand AddBook
+        {
+            get
+            {
+                return addBook ?? (addBook = new RelayCommand(obj =>
+                {
+                    if (selectedUser == null)
+                    {
+                        ErrorBox.UserSelectError();
+                    }
+                    if (selectedBook == null)
+                    {
+
+                        ErrorBox.BookSelectError();
+                    }
+                    if (selectedBook.Count > 0)
+                    {
+                        selectedUser.BookList.Add(selectedBook);
+                        selectedBook.Count--;
+
+                    }
+                    else
+                    {
+                        ErrorBox.BookCountError();
+                    }
+                }));
             }
         }
 
