@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using LibraryMVVM_Application.ViewModel;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using System.Windows;
 
 namespace LibraryMVVM_Application.ViewModel
 {
@@ -16,11 +17,13 @@ namespace LibraryMVVM_Application.ViewModel
         private User selectedUser;
         private Book selectedBook;
         private Book selectedUserBook;
+        private string textUsers;
+        private string textBooks;
+        private string textBooksCount;
+        private string textUserBooks;
 
         public ObservableCollection<User> AllUsers { get; set; }
         public ObservableCollection<Book> AllBooks { get; set; }
-
-        //public bool flag = false;
 
         public User SelectedUser
         {
@@ -51,6 +54,72 @@ namespace LibraryMVVM_Application.ViewModel
             }
         }
 
+        public ObservableCollection<User> FoundUsers
+        {
+            get
+            {
+                if (textUsers != null)
+                {
+                    return new ObservableCollection<User>
+                        (AllUsers.Where(user => (Convert.ToString(user.Id).ToLower() + user.Name.ToLower() + user.Surname.ToLower()).Contains(Convert.ToString(TextUsers).ToLower())));
+                }
+                else
+                {  
+                    return AllUsers;
+                }
+            }
+        }
+
+        public ObservableCollection<Book> FoundBooks
+        {
+            get
+            {
+                if ((textBooks != null) && (textBooksCount != null))
+                {
+                    return new ObservableCollection<Book>
+                        (AllBooks.Where(book => (Convert.ToString(book.Arc).ToLower() + book.Author.ToLower() + book.Name.ToLower() + Convert.ToString(book.Age).ToLower()).Contains(Convert.ToString(TextBooks).ToLower()) && (Convert.ToString(book.Count).ToLower().Contains(TextBooksCount))));
+                }
+                else
+                {
+                    return AllBooks;
+                }
+            }
+        }
+
+
+        public string TextUsers
+        {
+            get { return textUsers; }
+            set
+            {
+                textUsers = value;
+                OnPropertyChanged(nameof(FoundUsers));
+                OnPropertyChanged(nameof(TextUsers));
+            }
+        }
+
+        public string TextBooks
+        {
+            get { return textBooks; }
+            set
+            {
+                textBooks = value;
+                OnPropertyChanged(nameof(FoundBooks));
+                OnPropertyChanged(nameof(TextBooks));
+            }
+        }
+
+        public string TextBooksCount
+        {
+            get { return textBooksCount; }
+            set
+            {
+                textBooksCount = value;
+                OnPropertyChanged(nameof(FoundBooks));
+                OnPropertyChanged(nameof(TextBooksCount));
+            }
+        }
+
         private RelayCommand takeBook;
         public RelayCommand TakeBook
         {
@@ -58,37 +127,31 @@ namespace LibraryMVVM_Application.ViewModel
             {
                 return takeBook ?? (takeBook = new RelayCommand(obj =>
                 {
-                    if (selectedUser == null)
-                        ErrorBox.UserSelectError();
-                    if (selectedUserBook != null)
+                    if (selectedUser != null)
                     {
-                        //if (flag == false)
-                        //{
-                        //    for (int i = 0; i < AllBooks.Count; i++)
-                        //    {
-                        //        if (SelectedBook.Arc == AllBooks[i].Arc) { AllBooks[i].Count += 1; }
-                        //    }
-                        //    SelectedUser.BookList.Remove(SelectedBook);
-                        //}
-                        //else
-                        //{
-                        for (int i = 0; i < AllBooks.Count; i++)
+                        if (selectedUserBook != null)
                         {
-                            if (selectedUserBook.Arc == AllBooks[i].Arc) { AllBooks[i].Count += 1; }
-                        }
-                        for (int i = 0; i < selectedUser.BookList.Count; i++)
-                        {
-                            if (selectedUserBook.Arc == selectedUser.BookList[i].Arc)
+                            for (int i = 0; i < AllBooks.Count; i++)
                             {
-                                selectedUser.BookList.Remove(selectedUser.BookList[i]);
-                                break;
+                                if (selectedUserBook.Arc == AllBooks[i].Arc) { AllBooks[i].Count += 1; }
+                            }
+                            for (int i = 0; i < selectedUser.BookList.Count; i++)
+                            {
+                                if (selectedUserBook.Arc == selectedUser.BookList[i].Arc)
+                                {
+                                    selectedUser.BookList.Remove(selectedUser.BookList[i]);
+                                    break;
+                                }
                             }
                         }
-                        //}
+                        else
+                        {
+                            ErrorBox.UserBookSelectError();
+                        }
                     }
                     else
                     {
-                        ErrorBox.UserBookSelectError();
+                        ErrorBox.UserSelectError();
                     }
                 }));
             } 
@@ -101,24 +164,29 @@ namespace LibraryMVVM_Application.ViewModel
             {
                 return addBook ?? (addBook = new RelayCommand(obj =>
                 {
-                    if (selectedUser == null)
+                    if (selectedUser != null)
                     {
-                        ErrorBox.UserSelectError();
-                    }
-                    if (selectedBook == null)
-                    {
+                        if (selectedBook != null)
+                        {
+                            if (selectedBook.Count > 0)
+                            {
+                                selectedUser.BookList.Add(selectedBook);
+                                selectedBook.Count--;
 
-                        ErrorBox.BookSelectError();
-                    }
-                    if (selectedBook.Count > 0)
-                    {
-                        selectedUser.BookList.Add(selectedBook);
-                        selectedBook.Count--;
-
+                            }
+                            else
+                            {
+                                ErrorBox.BookCountError();
+                            }   
+                        }
+                        else
+                        {
+                            ErrorBox.BookSelectError();
+                        }
                     }
                     else
                     {
-                        ErrorBox.BookCountError();
+                        ErrorBox.UserSelectError();
                     }
                 }));
             }
